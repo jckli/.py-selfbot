@@ -1,1 +1,1 @@
-discord.py==latest
+discord.py
