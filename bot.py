@@ -15,7 +15,7 @@ async def on_ready():
 
 @client.command()
 async def status(ctx, arg1, arg2):
-    """error"""
+    """Please enter correct context."""
     if "playing" in arg1:
         await client.change_presence(activity=discord.Game(name=arg2))
         await ctx.send("Changed your status to {} {}".format(arg1, arg2))
