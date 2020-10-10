@@ -8,5 +8,7 @@ install:
 script:
   - python ./bot.py --test-run
 cache: pip
+notifications:
+  email: false
 dist: xenial
 os: linux
