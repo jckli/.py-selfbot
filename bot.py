@@ -42,35 +42,6 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.offline, afk=True)
     bot.default_status = "offline"
 
-@bot.command(pass_context=True)
-async def reload(ctx, txt: str = None):
-    """Reloads all modules."""
-    await ctx.message.delete()
-    if txt:
-        bot.unload_extension(txt)
-        try:
-            bot.load_extension(txt)
-        except Exception as e:
-            try:
-                bot.load_extension(txt)
-            except:
-                await ctx.send('``` {}: {} ```'.format(type(e).__name__, e))
-                return
-    else:
-        utils = []
-        for i in bot.extensions:
-            utils.append(i)
-        l = len(utils)
-        utils.append(utils.pop(utils.index('cogs.help')))
-        for i in utils:
-            bot.unload_extension(i)
-            try:
-                bot.load_extension(i)
-            except Exception as e:
-                await ctx.send('{}Failed to reload module `{}` ``` {}: {} ```')
-                l -= 1
-        await ctx.send('Reloaded {} of {} modules.'.format(l, len(utils)))
-
 for file in os.listdir("./cogs"):
     if file.endswith(".py"):
         name = file[:-3]
