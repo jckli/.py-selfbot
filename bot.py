@@ -28,33 +28,55 @@ _silent = args.silent
 _force_admin = False
 
 if _test_run:
-    print("Quitting: test run")
+    print("Nice!")
     exit(0)
 
 with open("config.json", "r") as f:
     config = json.load(f)
 
-client = commands.Bot(command_prefix = config["prefix"], self_bot=True)
-client.remove_command("help")
+bot = commands.Bot(command_prefix = config["prefix"], self_bot=True)
 
-@client.event
+@bot.event
 async def on_ready():
-    print("Bot is ready.")
+    print(f"Bot is ready.\n-----------------\nLogged in as: {bot.user}\nUser ID: {bot.user.id}")
+    await bot.change_presence(status=discord.Status.offline, afk=True)
+    bot.default_status = "offline"
 
-@client.command()
-async def status(ctx, arg1, arg2):
-    """Please enter correct context."""
-    if "playing" in arg1:
-        await client.change_presence(activity=discord.Game(name=arg2))
-        await ctx.send("Changed your status to {} {}".format(arg1, arg2))
-    elif "stream" in arg1:
-        await client.change_presence(activity=discord.Streaming(name=arg2, url="https://www.twitch.tv/toucanee"))
-        await ctx.send("Changed your status to {} {}".format(arg1, arg2))
-    elif "listening" in arg1:
-        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=arg2))
-        await ctx.send("Changed your status to {} {}".format(arg1, arg2))
-    elif "watching" in arg1:
-        await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=arg2))
-        await ctx.send("Changed your status to {} {}".format(arg1, arg2))
+@bot.command(pass_context=True)
+async def reload(ctx, txt: str = None):
+    """Reloads all modules."""
+    await ctx.message.delete()
+    if txt:
+        bot.unload_extension(txt)
+        try:
+            bot.load_extension(txt)
+        except Exception as e:
+            try:
+                bot.load_extension(txt)
+            except:
+                await ctx.send('``` {}: {} ```'.format(type(e).__name__, e))
+                return
+    else:
+        utils = []
+        for i in bot.extensions:
+            utils.append(i)
+        l = len(utils)
+        utils.append(utils.pop(utils.index('cogs.help')))
+        for i in utils:
+            bot.unload_extension(i)
+            try:
+                bot.load_extension(i)
+            except Exception as e:
+                await ctx.send('{}Failed to reload module `{}` ``` {}: {} ```')
+                l -= 1
+        await ctx.send('Reloaded {} of {} modules.'.format(l, len(utils)))
 
-client.run(config["token"], bot=False)
+for file in os.listdir("./cogs"):
+    if file.endswith(".py"):
+        name = file[:-3]
+        bot.load_extension(f"cogs.{name}")
+
+try:
+    bot.run(config['token'], bot=False)
+except Exception as err:
+    print(f'Error: {err}')
